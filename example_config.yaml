@@ -1,0 +1,15 @@
+listen:
+  address: 0.0.0.0
+  port: 5353  # udp
+
+dns_server:
+  address: 1.1.1.1
+  port: 53  # udp
+
+# Request this domain on ip change to verify your ip adress and wait until your dns cache resets
+auth_domain: secret.com  # change this to a non existing secret domain
+
+blocked_domains:
+  - "*.example.com"
+  - www.example.com
+  - example.com
