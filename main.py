@@ -1,4 +1,5 @@
 import socket
+import select
 from typing import Union
 
 import yaml
@@ -6,6 +7,8 @@ import yaml
 
 BUFFER_SIZE = 512
 HEADER_SIZE = 12
+CLIENT_TIMEOUT = 5
+SERVER_TIMEOUT = 15
 
 allowed_address: Union[str, None] = None
 
@@ -17,10 +20,17 @@ with open("data/config.yaml", "r") as file:
 def forward_request(data: bytes) -> bytes:
     # Create a UDP socket to communicate with the real DNS server
     dns_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    dns_socket.settimeout(SERVER_TIMEOUT)
     dns_socket.sendto(data, (config["dns_server"]["address"], config["dns_server"]["port"]))
 
     # Receive the DNS response from the real DNS server
-    response, _ = dns_socket.recvfrom(BUFFER_SIZE)
+    response = None
+    try:
+        response, _ = dns_socket.recvfrom(BUFFER_SIZE)
+    except socket.timeout:
+        print("Forwarding request timeout")
+        pass
+    dns_socket.close()
     return response
 
 
@@ -84,12 +94,17 @@ def generate_block_response(data: bytes) -> bytes:
 def main():
     # Create a UDP socket to listen for incoming DNS requests
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket.settimeout(CLIENT_TIMEOUT)
     server_socket.bind((config["listen"]["address"], config["listen"]["port"]))
     print(f"DNS Proxy listening on {config['listen']['address']}:{config['listen']['port']}")
 
     while True:
         # Receive DNS request from client
-        data, client_address = server_socket.recvfrom(BUFFER_SIZE)
+        try:
+            data, client_address = server_socket.recvfrom(BUFFER_SIZE)
+        except socket.timeout:
+            print("Timeout")
+            continue
         print(f"<<< Received request from {client_address}")
 
         # Check if the request is too small
