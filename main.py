@@ -13,7 +13,7 @@ SERVER_TIMEOUT = 15
 allowed_address: Union[str, None] = None
 
 
-with open("data/config.yaml", "r") as file:
+with open("config.yaml", "r") as file:
     config = yaml.safe_load(file)
 
 

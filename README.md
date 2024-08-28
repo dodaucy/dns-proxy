@@ -14,7 +14,7 @@ docker build -t dns-proxy .
 
 docker run -d \  # Run in background
   -p $(hostname -I | awk '{print $1}'):53:5353/udp \
-  -v ./data:/app/data \
+  -v ./data/config.yaml:/app/config.yaml \
   --name dns-proxy \
   --restart always \
   dns-proxy
@@ -32,9 +32,8 @@ cd dns-proxy
 
 python3 -m pip install -Ur requirements.txt
 
-mkdir data
-cp example_config.yaml data/config.yaml
-nano data/config.yaml  # Edit config
+cp example_config.yaml config.yaml
+nano config.yaml  # Edit config
 
 python3 main.py  # Run
 ```
