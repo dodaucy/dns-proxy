@@ -1,5 +1,5 @@
+import ipaddress
 import socket
-import select
 from typing import Union
 
 import yaml
@@ -43,8 +43,14 @@ def is_blocked(client_address, domain: str) -> bool:
         allowed_address = client_address[0]
         return True
 
-    # Check if the request is from the allowed address
-    if allowed_address != client_address[0]:
+    # Check if no address is allowed
+    if allowed_address is None:
+        print("No address allowed. Call auth domain first")
+        return True
+
+    # Check if the request is from the allowed subnet
+    allowed_subnet = ipaddress.ip_network(f"{client_address[0]}/{config['allowed_subnet']}", strict=False)
+    if ipaddress.ip_address(client_address[0]) not in allowed_subnet:
         print("Address not allowed")
         return True
 

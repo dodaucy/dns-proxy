@@ -9,6 +9,9 @@ dns_server:
 # Request this domain on ip change to verify your ip adress and wait until your dns cache resets
 auth_domain: secret.com  # change this to a non existing secret domain
 
+# Allowed subnet in CIDR notation
+allowed_subnet: 32  # /32 = exact match
+
 blocked_domains:
   - "*.example.com"
   - www.example.com
