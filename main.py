@@ -1,6 +1,5 @@
 import ipaddress
 import socket
-from typing import Union
 
 import yaml
 
@@ -10,26 +9,25 @@ HEADER_SIZE = 12
 CLIENT_TIMEOUT = 5
 SERVER_TIMEOUT = 15
 
-allowed_address: Union[str, None] = None
+allowed_address: str | None = None
 
 
 with open("config.yaml", "r") as file:
     config = yaml.safe_load(file)
 
 
-def forward_request(data: bytes) -> bytes:
+def forward_request(data: bytes) -> bytes | None:
     # Create a UDP socket to communicate with the real DNS server
     dns_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     dns_socket.settimeout(SERVER_TIMEOUT)
     dns_socket.sendto(data, (config["dns_server"]["address"], config["dns_server"]["port"]))
 
     # Receive the DNS response from the real DNS server
-    response = None
     try:
         response, _ = dns_socket.recvfrom(BUFFER_SIZE)
     except socket.timeout:
         print("Forwarding request timeout")
-        pass
+        response = None
     dns_socket.close()
     return response
 
@@ -129,6 +127,8 @@ def main():
             # Forward the DNS request to the real DNS server
             print("Forwarding request")
             response = forward_request(data)
+            if response is None:
+                continue
 
         # Send the DNS response back to the client
         server_socket.sendto(response, client_address)
