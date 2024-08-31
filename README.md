@@ -30,10 +30,12 @@ docker logs -f dns-proxy  # Log
 git clone https://github.com/dodaucy/dns-proxy.git
 cd dns-proxy
 
-python3 -m pip install -Ur requirements.txt
+python3 -m venv venv
+
+venv/bin/pip install -Ur requirements.txt
 
 cp example_config.yaml config.yaml
 nano config.yaml  # Edit config
 
-python3 main.py  # Run
+venv/bin/python main.py  # Run
 ```
