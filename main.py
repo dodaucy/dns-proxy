@@ -9,7 +9,7 @@ HEADER_SIZE = 12
 CLIENT_TIMEOUT = 5
 SERVER_TIMEOUT = 15
 
-allowed_address: str | None = None
+allowed_subnet: str | None = None
 
 
 with open("config.yaml", "r") as file:
@@ -33,21 +33,20 @@ def forward_request(data: bytes) -> bytes | None:
 
 
 def is_blocked(client_address, domain: str) -> bool:
-    global allowed_address
+    global allowed_subnet
 
     # Check if the request wants to resolve the auth domain
     if domain == config["auth_domain"]:
         print("Updating allowed address")
-        allowed_address = client_address[0]
+        allowed_subnet = ipaddress.ip_network(f"{client_address[0]}/{config['allowed_subnet']}", strict=False)
         return True
 
     # Check if no address is allowed
-    if allowed_address is None:
+    if allowed_subnet is None:
         print("No address allowed. Call auth domain first")
         return True
 
     # Check if the request is from the allowed subnet
-    allowed_subnet = ipaddress.ip_network(f"{client_address[0]}/{config['allowed_subnet']}", strict=False)
     if ipaddress.ip_address(client_address[0]) not in allowed_subnet:
         print("Address not allowed")
         return True
